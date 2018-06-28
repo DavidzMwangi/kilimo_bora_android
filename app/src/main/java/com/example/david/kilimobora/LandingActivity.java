@@ -5,6 +5,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatButton;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -18,6 +19,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.raizlabs.android.dbflow.config.FlowManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +41,7 @@ public class LandingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
 
+        FlowManager.init(this);
         county_spinner=(Spinner)findViewById(R.id.county_spinner);
         explore=(AppCompatButton)findViewById(R.id.explore_button);
 
@@ -52,7 +55,7 @@ public class LandingActivity extends AppCompatActivity {
 
         //load the data here
         getCountiesSubCountiesOnline();
-
+//            silly();
         explore.setOnClickListener(new  View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,10 +78,11 @@ public class LandingActivity extends AppCompatActivity {
 
 
     public void getCountiesSubCountiesOnline(){
-        NetController client=new NetController();
+//        NetController client=new NetController();
         RequestParams params=new RequestParams();
 
-
+        AsyncHttpClient client=new AsyncHttpClient(true,80,443);
+        client.addHeader("Accept", "application/json");
         client.get(CoreUtils.base_url+"home_data",params,new JsonHttpResponseHandler(){
 
 
@@ -87,7 +91,10 @@ public class LandingActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
 
+                Toast.makeText(getApplicationContext(),"Success started",Toast.LENGTH_SHORT).show();
                 try {
+                    Toast.makeText(getApplicationContext(),"started saving",Toast.LENGTH_SHORT).show();
+
                     JSONArray counties=response.getJSONArray("counties");
                    for (int i=0; i<counties.length();i++){
                        JSONObject obj = counties.getJSONObject(i);
@@ -112,14 +119,56 @@ public class LandingActivity extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),"catch error",Toast.LENGTH_SHORT).show();
+
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
-
+                Toast.makeText(getApplicationContext(),CoreUtils.base_url,Toast.LENGTH_SHORT).show();
+                Log.e("error", errorResponse.toString());
             }
         });
     }
+
+    public void silly(){
+        AsyncHttpClient client=new AsyncHttpClient(true,80,443);
+        client.addHeader("Accept", "application/json");
+        RequestParams params=new RequestParams();
+
+
+        client.get(CoreUtils.base_url+"silly",params,new JsonHttpResponseHandler(){
+
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                super.onSuccess(statusCode, headers, responseString);
+
+                Toast.makeText(getApplicationContext(),"String",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Toast.makeText(getApplicationContext(),CoreUtils.base_url,Toast.LENGTH_SHORT).show();
+                Log.e("error", errorResponse.toString());
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+                Log.e("error",responseString);
+                Toast.makeText(getApplicationContext(),responseString, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }
