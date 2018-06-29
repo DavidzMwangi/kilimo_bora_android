@@ -17,6 +17,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.david.kilimobora.fragments.HomeFragment;
+import com.example.david.kilimobora.models.CountyCrop;
+import com.example.david.kilimobora.models.Crop;
+import com.example.david.kilimobora.models.Disease;
+import com.example.david.kilimobora.models.MitigationPlan;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+import com.raizlabs.android.dbflow.config.FlowManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -27,7 +41,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        FlowManager.init(getApplicationContext());
         //by default the home fragment is called
         changeFragment(1);
 
@@ -130,5 +144,112 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
+    }
+    public void getCropsData(){
+        AsyncHttpClient client=new AsyncHttpClient(true,80,443);
+        client.addHeader("Accept", "application/json");
+
+        RequestParams params=new RequestParams();
+
+        client.get("all_crops",params,new JsonHttpResponseHandler(){
+
+            @Override
+            public void onStart() {
+                super.onStart();
+            }
+
+            @Override
+            public void onFinish() {
+                super.onFinish();
+
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                try {
+
+                    JSONArray crops_records=response.getJSONArray("crops");
+
+                    for (int i=0;i<crops_records.length();i++){
+                        JSONObject obj=crops_records.getJSONObject(i);
+                        Crop crop=new Crop();
+                        crop.id=obj.getInt("id");
+                        crop.name=obj.getString("name");
+                        crop.save();
+                    }
+
+                    JSONArray county_crops_records=response.getJSONArray("county_crops");
+
+                    for (int i=0; i<county_crops_records.length();i++){
+                        JSONObject obj=county_crops_records.getJSONObject(i);
+                        CountyCrop cp=new CountyCrop();
+                        cp.id=obj.getInt("id");
+                        cp.crop_id=obj.getInt("crop_id");
+                        cp.sub_county_id=obj.getInt("sub_county_id");
+                        cp.save();
+                    }
+                }catch (JSONException e){
+
+                    e.printStackTrace();
+
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
+    }
+    public void getDiseasesData(){
+        AsyncHttpClient client=new AsyncHttpClient(true,80,443);
+        client.addHeader("Accept", "application/json");
+
+        RequestParams params=new RequestParams();
+
+        client.get("diseases",params,new JsonHttpResponseHandler(){
+
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+
+
+                try {
+                    JSONArray disease_records=response.getJSONArray("diseases");
+                    for (int a=0;a<disease_records.length();a++){
+                        JSONObject disease=disease_records.getJSONObject(a);
+                        Disease disease1=new Disease();
+                        disease1.id=disease.getInt("id");
+                        disease1.name=disease.getString("name");
+                        disease1.county_crop_id=disease.getInt("county_crop_id");
+                        disease1.image_name=disease.getString("image_name");
+                        disease1.save();
+                    }
+
+
+                    JSONArray mitigations=response.getJSONArray("mitigations");
+                    for (int a=0;a<mitigations.length();a++){
+                        JSONObject mitigation=mitigations.getJSONObject(a);
+                        MitigationPlan mitigation_recoord=new MitigationPlan();
+                        mitigation_recoord.id=mitigation.getInt("id");
+                        mitigation_recoord.crop_id=mitigation.getInt("crop_id");
+                        mitigation_recoord.mitigation_plan=mitigation.getString("mitigation_plan");
+                        mitigation_recoord.save();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
     }
 }

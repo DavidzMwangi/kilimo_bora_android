@@ -7,10 +7,11 @@ import com.loopj.android.http.RequestParams;
 public class NetController {
 
 
-    private static AsyncHttpClient client=new AsyncHttpClient(true,80,443);
+    public   AsyncHttpClient client;
 
     public NetController(){
-            client.addHeader("Accept", "application/json");
+            client=new AsyncHttpClient(true,80,443);
+        client.addHeader("Accept", "application/json");
     }
 
     public   void get(String url, RequestParams params, JsonHttpResponseHandler responseHandler){

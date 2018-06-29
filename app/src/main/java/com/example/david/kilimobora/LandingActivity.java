@@ -91,9 +91,9 @@ public class LandingActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
 
-                Toast.makeText(getApplicationContext(),"Success started",Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(),"Success started",Toast.LENGTH_SHORT).show();
                 try {
-                    Toast.makeText(getApplicationContext(),"started saving",Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(),"started saving",Toast.LENGTH_SHORT).show();
 
                     JSONArray counties=response.getJSONArray("counties");
                    for (int i=0; i<counties.length();i++){
@@ -119,7 +119,7 @@ public class LandingActivity extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(),"catch error",Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(),"catch error",Toast.LENGTH_SHORT).show();
 
                 }
             }
